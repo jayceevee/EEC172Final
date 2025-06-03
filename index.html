@@ -1,137 +1,841 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EEC 172 Final Project</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0f0f0f;
-      color: #f5f5f7;
-      padding: 2rem;
-    }
-    h1, h2 {
-      text-align: center;
-      font-weight: 700;
-    }
-    .video-wrapper {
-      display: flex;
-      justify-content: center;
-      margin: 2rem 0;
-    }
-    .video-wrapper iframe {
-      width: 100%;
-      max-width: 800px;
-      aspect-ratio: 16/9;
-      border-radius: 1rem;
-      border: 2px solid rgba(255,255,255,0.1);
-    }
-    .screenshot-gallery {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 2rem 0;
-    }
-    .screenshot-gallery img {
-      max-width: 300px;
-      border-radius: 1rem;
-      border: 1px solid #333;
-    }
-    #leaderboard {
-      width: 100%;
-      max-width: 700px;
-      margin: 0 auto 3rem;
-      border-collapse: collapse;
-      background: rgba(28,28,30,0.8);
-      border-radius: 1rem;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    #leaderboard th, #leaderboard td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    #leaderboard th {
-      background-color: rgba(44,44,46,0.8);
-    }
-    #leaderboard td {
-      background-color: rgba(28,28,30,0.7);
-    }
-    #leaderboard tr:last-child td {
-      border-bottom: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Game Embedded System with Cloud Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #f5f5f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .slide-container {
+            width: 90vw;
+            max-width: 1200px;
+            height: 75vh;
+            min-height: 600px;
+            max-height: 800px;
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align content to the top */
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(20px);
+            overflow-y: auto;
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .slide-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+        .slide-subtitle {
+            font-size: 1.4rem;
+            font-weight: 400;
+            color: #aEaEaE;
+            margin-bottom: 2rem;
+            max-width: 750px;
+            line-height: 1.4;
+        }
+        .slide-content {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.8;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+        .accent-blue { color: #0A84FF; } /* Apple Blue */
+        .accent-orange { color: #FF9F0A; } /* Apple Orange */
+        .accent-green { color: #30D158; } /* Apple Green */
+        .accent-purple { color: #BF5AF2; } /* Apple Purple */
+        .highlight { font-weight: 500; color: #f5f5f7; }
+
+        .nav-button {
+            background: rgba(28, 28, 30, 0.8);
+            color: #ffffff;
+            padding: 0.8rem 2rem;
+            border-radius: 1.5rem;
+            font-weight: 500;
+            margin: 0 0.75rem;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .nav-button:hover {
+            background: rgba(28, 28, 30, 0.9);
+            transform: translateY(-1px);
+        }
+        .nav-button:active {
+            transform: scale(0.98) translateY(0);
+        }
+        .navigation-controls {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .progress-bar-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0A84FF 0%, #30D158 100%);
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .footer-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Flow Chart Styles */
+        .arrow-connector {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .arrow {
+            position: relative;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.3));
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid rgba(255,255,255,0.3);
+        }
+        .arrow-split {
+            position: relative;
+            width: 80%;
+            height: 60px;
+        }
+        .arrow-split::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.3));
+        }
+        .arrow-split::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0.2), rgba(255,255,255,0.3));
+        }
+        .arrow-split-end {
+            position: absolute;
+            bottom: -10px;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.3));
+        }
+        .arrow-split-end::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid rgba(255,255,255,0.3);
+        }
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+        .flow-item {
+            padding: 1rem 1.5rem;
+            background: rgba(28, 28, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            min-width: 180px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .flow-item:hover {
+            transform: translateY(-2px);
+            background: rgba(28, 28, 30, 0.9);
+        }
+        .flow-item.main { border-color: rgba(10,132,255,0.3); }
+        .flow-item.game { border-color: rgba(255,159,10,0.3); }
+        .flow-item.utility { border-color: rgba(48,209,88,0.3); }
+        
+        /* Status Table Styles */
+        .status-table {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 1.5rem;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+        .status-table th {
+            background: rgba(28, 28, 30, 0.9);
+            font-weight: 600;
+            color: #ffffff;
+            padding: 1rem 1.2rem;
+            text-align: left;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .status-table td {
+            padding: 1rem 1.2rem;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(28, 28, 30, 0.8);
+        }
+        .status-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Video Placeholder */
+        .video-placeholder {
+            width: 80%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+        }
+        .video-placeholder:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.01);
+        }
+
+        ul.custom-list {
+            list-style: none;
+            padding-left: 0;
+            max-width: 700px; /* Adjusted max-width */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        ul.custom-list li {
+            position: relative;
+            padding-left: 1.5rem; 
+            margin-bottom: 0.6rem; 
+            text-align: left;
+            font-size: 0.95rem; /* Smaller font for lists */
+        }
+        ul.custom-list li::before {
+            content: '●'; 
+            position: absolute;
+            left: 0;
+            top: 0.05em; 
+            font-size: 0.8em; 
+            color: #0A84FF; 
+        }
+        .differentiation-text {
+            font-size: 0.9rem;
+            color: #aEaEaE;
+            margin-top: 1rem;
+            max-width: 700px;
+            text-align: left;
+            padding-left: 1.5rem; /* Indent to align with list items */
+            position: relative;
+        }
+        .differentiation-text::before {
+            content: '❖'; /* Different bullet for this section */
+            position: absolute;
+            left: 0;
+            top: 0.05em;
+            font-size: 0.9em;
+            color: #FF9F0A; /* Orange accent */
+        }
+
+        /* Team Member Styles */
+        .team-member {
+            font-weight: 500;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.4rem;
+            margin: 0 0.2rem;
+        }
+        .arnav {
+            color: #30D158;
+            background: rgba(48, 209, 88, 0.1);
+            border: 1px solid rgba(48, 209, 88, 0.2);
+        }
+        .joseph {
+            color: #0A84FF;
+            background: rgba(10, 132, 255, 0.1);
+            border: 1px solid rgba(10, 132, 255, 0.2);
+        }
+
+        /* Additional Flow Chart Styles */
+        .sub-flow-container {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(28, 28, 30, 0.4);
+            border-radius: 0.8rem;
+            margin: 1rem 0;
+        }
+        .sub-flow-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .mode-item {
+            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+            background: rgba(28, 28, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.6rem;
+            margin: 0.4rem 0;
+            text-align: left;
+        }
+        .menu-option {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: rgba(28, 28, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.6rem;
+            margin: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        /* Leaderboard Tab and Modal Styles */
+        .leaderboard-tab {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(44, 44, 46, 0.7); /* Slightly different background */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #f5f5f7;
+            padding: 0.6rem 1.2rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 1000; /* Ensure it's above slides */
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .leaderboard-tab:hover {
+            background: rgba(58, 58, 60, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .modal-overlay {
+            position: fixed; /* Cover the whole viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Darker semi-transparent background */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000; /* Above everything */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: rgba(28, 28, 30, 0.9); /* Consistent with slide container */
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.95);
+            transition: transform 0.4s ease;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #aEaEaE;
+            font-size: 2rem;
+            font-weight: 300;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+        .modal-close-btn:hover {
+            color: #ffffff;
+        }
+        #leaderboard-data-container { /* Placeholder for actual leaderboard content */
+            min-height: 200px; /* Ensure some space for content */
+            color: #f5f5f7;
+            text-align: left;
+        }
+
+    </style>
 </head>
 <body>
-  <h1 class="text-4xl mb-2">📡 EEC 172 Final Project</h1>
-  <h2 class="text-2xl text-gray-400 mb-4">Wireless Text-to-Cloud Leaderboard</h2>
+    <div class="slide-container">
+        <!-- Leaderboard Tab Button -->
+        <button id="leaderboardTabBtn" class="leaderboard-tab">🏆 Leaderboard</button>
 
-  <p class="max-w-3xl mx-auto text-center text-gray-300 mb-6">
-    This project integrates an embedded IR remote texting interface with an AWS cloud-hosted leaderboard. Players use a CC3200 LaunchPad to enter messages using a multi-tap IR remote system, which sends results wirelessly to an AWS Lambda function. The function updates a DynamoDB table, and the latest scores are retrieved and displayed here in real time.
-  </p>
+        <!-- Slides -->
+        <div class="slide active" id="slide1">
+            <h2 class="slide-title">Project Overview & Objectives</h2>
+            <p class="slide-subtitle">A Real-Time Multi-Game Entertainment System with Cloud Leaderboard</p>
+            <div class="slide-content">
+                <p class="mb-3 text-left">We are designing a <span class="highlight">multi-game entertainment platform</span> featuring:</p>
+                <ul class="custom-list mb-3">
+                    <li>Input via <span class="highlight">IR remote</span>, output to <span class="highlight">OLED display</span>.</li>
+                    <li>Games: <span class="accent-green">Tug of War</span> & <span class="accent-green">Tic Tac Toe</span>.</li>
+                    <li>Connectivity: <span class="accent-blue">UART multiplayer</span>, single-player <span class="accent-blue">AI</span>, and <span class="accent-orange">AWS cloud leaderboard</span>.</li>
+                </ul>
+                <p class="differentiation-text">
+                     <span class="highlight">Existing similar products</span> include basic handheld retro consoles or DIY game kits. <span class="highlight">Our system is different</span> because it integrates custom programming for real-time performance, direct hardware control, features both local UART multiplayer and a cloud-connected AWS leaderboard, and includes custom-developed AI which adapts to your win percentage.
+                </p>
+                <p class="mt-3 mb-1 text-left highlight">Key Technical Objectives:</p>
+                 <ul class="custom-list text-sm">
+                    <li>Interrupt-based IR input handling.</li>
+                    <li>State-driven SPI graphics rendering to OLED.</li>
+                    <li>Adaptive AI opponents.</li>
+                    <li>Board-to-board UART multiplayer.</li>
+                    <li>AWS cloud backend for stats & leaderboard.</li>
+                </ul>
+            </div>
+        </div>
 
-  <ul class="list-disc list-inside max-w-md mx-auto text-sm text-gray-400 mb-8">
-    <li>📡 CC3200 IR decoding & UART messaging</li>
-    <li>☁️ AWS Lambda + API Gateway + DynamoDB</li>
-    <li>💻 GitHub Pages frontend (this site)</li>
-  </ul>
+        <div class="slide" id="slide2">
+            <h2 class="slide-title">System Architecture</h2>
+            <div class="slide-content w-full">
+                <div class="flow-container">
+                    <div class="flow-row">
+                        <div class="flow-item main">IR Input Handler</div>
+                    </div>
+                    <div class="arrow-connector">
+                        <div class="arrow"></div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-item main">Game Engine Core</div>
+                    </div>
+                    <div class="arrow-split">
+                        <div class="arrow-split-end" style="left: 20%;"></div>
+                        <div class="arrow-split-end" style="left: 50%;"></div>
+                        <div class="arrow-split-end" style="left: 80%;"></div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-item game">OLED Graphics</div>
+                        <div class="flow-item utility">UART Multiplayer</div>
+                        <div class="flow-item">Cloud Sync</div>
+                    </div>
+                </div>
+                <div class="legend mt-4">
+                    <h3 class="font-semibold mb-2 text-sm accent-blue">Team Responsibilities:</h3>
+                    <div class="legend-item mb-2">
+                        <span class="team-member arnav">Arnav Suden</span>
+                        <span class="ml-2">OLED Graphics & UART Multiplayer</span>
+                    </div>
+                    <div class="legend-item mb-2">
+                        <span class="team-member joseph">Joseph</span>
+                        <span class="ml-2">Cloud Sync & AWS Integration</span>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="font-semibold mb-1 text-sm accent-blue">Component Types:</h3>
+                        <div class="legend-item"><div class="legend-color-box" style="background: rgba(10,132,255,0.3);"></div>Core Processing</div>
+                        <div class="legend-item"><div class="legend-color-box" style="background: rgba(255,159,10,0.3);"></div>Output Systems</div>
+                        <div class="legend-item"><div class="legend-color-box" style="background: rgba(48,209,88,0.3);"></div>Communication</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <h2 class="text-2xl mb-3">🎬 Video Demo</h2>
-  <div class="video-wrapper">
-    <iframe src="https://www.youtube.com/embed/zgGTVaG2UiQ" frameborder="0" allowfullscreen></iframe>
-  </div>
+        <div class="slide" id="slide3">
+            <h2 class="slide-title">Software Architecture</h2>
+            <p class="slide-subtitle">State-Driven Game System</p>
+            <div class="slide-content">
+                <div class="flow-container">
+                    <div class="flow-row">
+                        <div class="flow-item main">
+                            MAIN MENU
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                                <span class="menu-option">📊 Scoreboard</span>
+                                <span class="menu-option">🔄 Reset AI & Scores</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow-split">
+                        <div class="arrow-split-end" style="left: 25%;"></div>
+                        <div class="arrow-split-end" style="left: 75%;"></div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-item game" style="min-width: 300px;">
+                            TUG OF WAR
+                            <div class="sub-flow-container">
+                                <div class="sub-flow-title">Game Modes:</div>
+                                <div class="mode-item">🤖 Easy AI (Static)</div>
+                                <div class="mode-item">🧠 Adaptive AI (Learning)</div>
+                                <div class="mode-item">💪 Hard AI (Advanced Adaptive)</div>
+                                <div class="mode-item">👥 Local Multiplayer</div>
+                            </div>
+                        </div>
+                        <div class="flow-item game" style="min-width: 300px;">
+                            TIC TAC TOE
+                            <div class="sub-flow-container">
+                                <div class="sub-flow-title">Features:</div>
+                                <div class="mode-item">👥 Local Multiplayer (2 Players)</div>
+                                <div class="mode-item">🏆 Score Counter
+                                    <div style="font-size: 0.8rem; margin-top: 0.3rem; color: rgba(255,255,255,0.7);">
+                                        • Player X Wins<br/>
+                                        • Player O Wins<br/>
+                                        • Win Percentage
+                                    </div>
+                                </div>
+                                <div class="mode-item">📊 Performance Tracking</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow-connector">
+                        <div class="arrow"></div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-item utility">GAME OVER</div>
+                    </div>
+                </div>
+                <ul class="custom-list mt-4">
+                    <li>Event-driven transitions via <span class="highlight">IR input</span> and game logic</li>
+                    <li><span class="highlight">Modular design</span> with encapsulated state handling</li>
+                    <li>AI difficulty adapts based on player performance</li>
+                    <li>Persistent scoreboard with reset capability</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide4">
+            <h2 class="slide-title">Progress Report</h2>
+            <div class="slide-content w-full">
+                <table class="status-table mx-auto">
+                    <thead>
+                        <tr>
+                            <th>Task / Feature</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>IR Remote Decoding</td><td class="status-done">✔️ Completed</td><td>Robust & responsive</td></tr>
+                        <tr><td>OLED SPI Driver & Graphics Lib</td><td class="status-done">✔️ Completed</td><td>Optimized for CC3200</td></tr>
+                        <tr><td>Tug of War (Logic & AI)</td><td class="status-done">✔️ Completed</td><td>Adaptive AI implemented</td></tr>
+                        <tr><td>Tic Tac Toe (Logic & AI)</td><td class="status-done">✔️ Completed</td><td>AI logic refined</td></tr>
+                        <tr><td>UART Multiplayer Sync</td><td class="status-done">✔️ Completed</td><td>Stable communication</td></tr>
+                        <tr><td>AWS Leaderboard (POST/GET)</td><td class="status-done">✔️ Completed</td><td>API Gateway/Lambda/DynamoDB functional</td></tr>
+                    </tbody>
+                </table>
+                <p class="mt-4 text-sm text-gray-400">All core features are implemented and integrated.</p>
+                <p class="mt-2 highlight">A short demo video on the next slide will showcase these completed tasks in action.</p>
+            </div>
+        </div>
 
-  <h2 class="text-2xl mt-10 mb-3">🖼️ Screenshots</h2>
-  <div class="screenshot-gallery">
-    <img src="images/setup.jpg" alt="System Setup">
-    <img src="images/cc3200-ir.jpg" alt="IR Remote Input">
-  </div>
+        <div class="slide" id="slide5">
+            <h2 class="slide-title">Live Demonstration</h2>
+            <div class="slide-content w-full flex flex-col items-center">
+                <div class="video-placeholder">
+                    <span class="video-placeholder-icon">▶️</span>
+                    <span>Gameplay Video (30-45s)</span>
+                </div>
+                <p class="slide-subtitle text-sm mt-2">Brief video demonstrating:</p>
+                <ul class="custom-list text-sm">
+                    <li><span class="highlight">Tug of War & Tic Tac Toe</span> gameplay.</li>
+                    <li><span class="highlight">IR remote control</span> and real-time <span class="highlight">OLED updates</span>.</li>
+                    <li><span class="highlight">UART multiplayer</span> interaction.</li>
+                    <li><span class="accent-orange">AWS leaderboard</span> functionality (update/query).</li>
+                </ul>
+            </div>
+        </div>
 
-  <h2 class="text-2xl mt-10 mb-3">🏆 Leaderboard</h2>
-  <table id="leaderboard">
-    <thead>
-      <tr>
-        <th>Player</th>
-        <th>Wins</th>
-        <th>Losses</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+        <div class="slide" id="slide6">
+            <h2 class="slide-title">Achievements & Future Scope</h2>
+            <div class="flex flex-row justify-around w-full max-w-3xl mt-2">
+                <div class="w-1/2 pr-3">
+                    <h3 class="text-lg font-semibold mb-2 accent-green">Key Achievements:</h3>
+                    <ul class="custom-list text-xs">
+                        <li>Smooth graphics on OLED (Targeting ~<span class="highlight">60fps</span>).</li>
+                        <li>Responsive IR decoding (<span class="highlight">&lt;50ms latency</span>).</li>
+                        <li>Functional UART multiplayer sync.</li>
+                        <li>Integrated <span class="highlight">AWS cloud leaderboard</span> for persistent global scores.</li>
+                         <li>Developed adaptive AI for single-player modes.</li>
+                    </ul>
+                </div>
+                <div class="w-1/2 pl-3">
+                    <h3 class="text-lg font-semibold mb-2 accent-blue">Future Work:</h3>
+                    <ul class="custom-list text-xs">
+                        <li>Integrate <span class="highlight">PWM-based sound effects</span>.</li>
+                        <li>Develop <span class="highlight">mobile app</span> to query AWS leaderboard.</li>
+                        <li>Expand game library (e.g., <span class="highlight">Pong, Snake</span>).</li>
+                        <li>Optimize power consumption.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-2xl font-bold mt-8 accent-blue">Thank You</p>
+            <p class="text-xl mt-1">Questions?</p>
+        </div>
+        <!-- End of Slides -->
+    </div>
 
-  <script>
-    const apiUrl = 'https://q4zp8p15nj.execute-api.us-east-1.amazonaws.com/default/getLeaderboard';
-    document.addEventListener("DOMContentLoaded", () => {
-      const tbody = document.querySelector("#leaderboard tbody");
-      fetch(apiUrl)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          tbody.innerHTML = "";
-          data.sort((a, b) => a.player.localeCompare(b.player));
-          data.forEach(player => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${player.player}</td>
-              <td>${player.wins}</td>
-              <td>${player.losses}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        })
-        .catch(error => {
-          console.error("Error fetching leaderboard:", error);
-          const row = document.createElement("tr");
-          row.innerHTML = `<td colspan="3">Unable to load leaderboard data.</td>`;
-          tbody.appendChild(row);
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeLeaderboardModalBtn" class="modal-close-btn">&times;</button>
+            <h2 class="modal-title">🏆 Cloud Leaderboard</h2>
+            <div id="leaderboard-data-container">
+                <p>Leaderboard content will appear here once integrated with AWS functionality.</p>
+                <!-- Example Structure (your partner will replace this) -->
+                <!-- 
+                <table class="status-table mx-auto mt-4" style="background: rgba(44,44,46,0.8);">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>PlayerOne</td><td>10500</td></tr>
+                        <tr><td>2</td><td>PlayerTwo</td><td>9800</td></tr>
+                        <tr><td>3</td><td>PlayerThree</td><td>9750</td></tr>
+                    </tbody>
+                </table>
+                -->
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation-controls">
+        <button id="prevBtn" class="nav-button">❮ Prev</button>
+        <button id="nextBtn" class="nav-button">Next ❯</button>
+    </div>
+    <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div id="slideCounter" class="footer-text">Slide 1 of 6</div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const slideCounter = document.getElementById('slideCounter');
+        let currentSlide = 0;
+        const totalSlides = slides.length; // This will remain 6 as modal is not a slide
+
+        // Leaderboard Modal Elements
+        const leaderboardTabBtn = document.getElementById('leaderboardTabBtn');
+        const leaderboardModal = document.getElementById('leaderboardModal');
+        const closeLeaderboardModalBtn = document.getElementById('closeLeaderboardModalBtn');
+
+        function updateSlides(direction = 'next') {
+            // Hide current active slide with transition
+            const oldSlide = document.querySelector('.slide.active');
+            if (oldSlide) {
+                oldSlide.style.transform = direction === 'next' ? 'translateX(-50px)' : 'translateX(50px)'; // Shorter distance
+                oldSlide.style.opacity = '0';
+            }
+            
+            // After a short delay for the out-transition, switch classes and transition in
+            setTimeout(() => {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active');
+                    // Reset transform for non-active slides to prepare for their potential in-transition
+                    if (index !== currentSlide) {
+                         slide.style.transform = direction === 'next' ? 'translateX(50px)' : 'translateX(-50px)';
+                    }
+                });
+                
+                // Activate the new current slide
+                slides[currentSlide].classList.add('active');
+                // Start its in-transition
+                setTimeout(() => { // Slight delay to ensure class is applied before transform
+                    slides[currentSlide].style.transform = 'translateX(0)';
+                    slides[currentSlide].style.opacity = '1';
+                }, 20); // A very short delay
+            }, 250); // Duration of the out-transition
+            
+            const progressPercentage = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+            
+            prevBtn.style.opacity = prevBtn.disabled ? '0.4' : '1';
+            prevBtn.style.cursor = prevBtn.disabled ? 'not-allowed' : 'pointer';
+            nextBtn.style.opacity = nextBtn.disabled ? '0.4' : '1';
+            nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides('prev');
+            }
         });
-    });
-  </script>
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides('next');
+            }
+        });
+        
+        document.addEventListener('keydown', (event) => {
+            if (leaderboardModal.classList.contains('visible')) { // If modal is open, only allow Esc to close it
+                if (event.key === 'Escape') {
+                    leaderboardModal.classList.remove('visible');
+                }
+                return; // Prevent slide navigation when modal is open
+            }
+
+            if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'PageDown') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateSlides('next');
+                }
+            } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides('prev');
+                }
+            }
+        });
+
+        // Leaderboard Modal Logic
+        leaderboardTabBtn.addEventListener('click', () => {
+            leaderboardModal.classList.add('visible');
+        });
+
+        closeLeaderboardModalBtn.addEventListener('click', () => {
+            leaderboardModal.classList.remove('visible');
+        });
+
+        // Optional: Close modal if clicking on the overlay itself
+        leaderboardModal.addEventListener('click', (event) => {
+            if (event.target === leaderboardModal) { // Check if the click is on the overlay, not the content
+                leaderboardModal.classList.remove('visible');
+            }
+        });
+
+
+        // Initialize first slide
+        if (slides.length > 0) {
+            slides[0].style.transform = 'translateX(0)';
+            slides[0].style.opacity = '1';
+        }
+        updateSlides(); // Call to set initial button states and progress
+    </script>
 </body>
 </html>
