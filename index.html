@@ -7,51 +7,44 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
+    <h1>📡 EEC 172 Final Project</h1>
+    <h2>Wireless Text-to-Cloud Leaderboard</h2>
 
-  <header>
-    <h1>EEC 172 Final Project: Wireless Text-to-Cloud Leaderboard</h1>
-  </header>
-
-  <section class="description">
-    <h2>Project Description</h2>
     <p>
       This project integrates an embedded IR remote texting interface with an AWS cloud-hosted leaderboard.
-      Players use a CC3200 LaunchPad to enter messages using a multi-tap IR remote system, which sends
-      results wirelessly to an AWS Lambda function. The function updates a DynamoDB table, and the
-      latest scores are retrieved and displayed here in real time.
+      Players use a CC3200 LaunchPad to enter messages using a multi-tap IR remote system, which sends results
+      wirelessly to an AWS Lambda function. The function updates a DynamoDB table, and the latest scores are retrieved
+      and displayed here in real time.
     </p>
 
     <ul>
-      <li>🔧 CC3200 IR decoding & UART messaging</li>
+      <li>📡 CC3200 IR decoding & UART messaging</li>
       <li>☁️ AWS Lambda + API Gateway + DynamoDB</li>
-      <li>🌐 GitHub Pages frontend (this site!)</li>
+      <li>💻 GitHub Pages frontend (this site)</li>
     </ul>
-  </section>
 
-  <section class="media">
-    <h2>Video Demo</h2>
-    <!-- Replace when uploaded -->
-    <div class="video-container">
-      <iframe src="https://www.youtube.com/embed/VIDEO_ID" 
-              frameborder="0" allowfullscreen></iframe>
+    <h2>🎬 Video Demo</h2>
+    <div class="video-wrapper">
+      <!-- test -->
+      <iframe src="https://www.youtube.com/embed/zgGTVaG2UiQ?si=m9r_1qMvXXrQgN2D" 
+        frameborder="0" allowfullscreen></iframe>
     </div>
 
-    <h3>Screenshots</h3>
-    <div class="screenshots">
+    <h2>🖼️ Screenshots</h2>
+    <div class="screenshot-gallery">
       <img src="images/setup.jpg" alt="System Setup">
       <img src="images/cc3200-ir.jpg" alt="IR Remote Input">
     </div>
-  </section>
 
-  <section class="leaderboard-section">
-    <h2>Leaderboard</h2>
+    <h2>🏆 Leaderboard</h2>
     <table id="leaderboard">
       <thead>
         <tr><th>Player</th><th>Wins</th><th>Losses</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-  </section>
+  </div>
 
   <script src="script.js"></script>
 </body>
