@@ -1,51 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EEC 172 Final Project</title>
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f0f;
+      color: #f5f5f7;
+      padding: 2rem;
+    }
+    h1, h2 {
+      text-align: center;
+      font-weight: 700;
+    }
+    .video-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .video-wrapper iframe {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      border-radius: 1rem;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .screenshot-gallery {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2rem 0;
+    }
+    .screenshot-gallery img {
+      max-width: 300px;
+      border-radius: 1rem;
+      border: 1px solid #333;
+    }
+    #leaderboard {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      border-collapse: collapse;
+      background: rgba(28,28,30,0.8);
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    #leaderboard th, #leaderboard td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    #leaderboard th {
+      background-color: rgba(44,44,46,0.8);
+    }
+    #leaderboard td {
+      background-color: rgba(28,28,30,0.7);
+    }
+    #leaderboard tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📡 EEC 172 Final Project</h1>
-    <h2>Wireless Text-to-Cloud Leaderboard</h2>
+  <h1 class="text-4xl mb-2">📡 EEC 172 Final Project</h1>
+  <h2 class="text-2xl text-gray-400 mb-4">Wireless Text-to-Cloud Leaderboard</h2>
 
-    <p>
-      This project integrates an embedded IR remote texting interface with an AWS cloud-hosted leaderboard.
-      Players use a CC3200 LaunchPad to enter messages using a multi-tap IR remote system, which sends results
-      wirelessly to an AWS Lambda function. The function updates a DynamoDB table, and the latest scores are retrieved
-      and displayed here in real time.
-    </p>
+  <p class="max-w-3xl mx-auto text-center text-gray-300 mb-6">
+    This project integrates an embedded IR remote texting interface with an AWS cloud-hosted leaderboard. Players use a CC3200 LaunchPad to enter messages using a multi-tap IR remote system, which sends results wirelessly to an AWS Lambda function. The function updates a DynamoDB table, and the latest scores are retrieved and displayed here in real time.
+  </p>
 
-    <ul>
-      <li>📡 CC3200 IR decoding & UART messaging</li>
-      <li>☁️ AWS Lambda + API Gateway + DynamoDB</li>
-      <li>💻 GitHub Pages frontend (this site)</li>
-    </ul>
+  <ul class="list-disc list-inside max-w-md mx-auto text-sm text-gray-400 mb-8">
+    <li>📡 CC3200 IR decoding & UART messaging</li>
+    <li>☁️ AWS Lambda + API Gateway + DynamoDB</li>
+    <li>💻 GitHub Pages frontend (this site)</li>
+  </ul>
 
-    <h2>🎬 Video Demo</h2>
-    <div class="video-wrapper">
-      <!-- test -->
-      <iframe src="https://www.youtube.com/embed/zgGTVaG2UiQ?si=m9r_1qMvXXrQgN2D" 
-        frameborder="0" allowfullscreen></iframe>
-    </div>
-
-    <h2>🖼️ Screenshots</h2>
-    <div class="screenshot-gallery">
-      <img src="images/setup.jpg" alt="System Setup">
-      <img src="images/cc3200-ir.jpg" alt="IR Remote Input">
-    </div>
-
-    <h2>🏆 Leaderboard</h2>
-    <table id="leaderboard">
-      <thead>
-        <tr><th>Player</th><th>Wins</th><th>Losses</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <h2 class="text-2xl mb-3">🎬 Video Demo</h2>
+  <div class="video-wrapper">
+    <iframe src="https://www.youtube.com/embed/zgGTVaG2UiQ" frameborder="0" allowfullscreen></iframe>
   </div>
 
-  <script src="script.js"></script>
+  <h2 class="text-2xl mt-10 mb-3">🖼️ Screenshots</h2>
+  <div class="screenshot-gallery">
+    <img src="images/setup.jpg" alt="System Setup">
+    <img src="images/cc3200-ir.jpg" alt="IR Remote Input">
+  </div>
+
+  <h2 class="text-2xl mt-10 mb-3">🏆 Leaderboard</h2>
+  <table id="leaderboard">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Wins</th>
+        <th>Losses</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiUrl = 'https://q4zp8p15nj.execute-api.us-east-1.amazonaws.com/default/getLeaderboard';
+    document.addEventListener("DOMContentLoaded", () => {
+      const tbody = document.querySelector("#leaderboard tbody");
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+          return response.json();
+        })
+        .then(data => {
+          tbody.innerHTML = "";
+          data.sort((a, b) => a.player.localeCompare(b.player));
+          data.forEach(player => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${player.player}</td>
+              <td>${player.wins}</td>
+              <td>${player.losses}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error("Error fetching leaderboard:", error);
+          const row = document.createElement("tr");
+          row.innerHTML = `<td colspan="3">Unable to load leaderboard data.</td>`;
+          tbody.appendChild(row);
+        });
+    });
+  </script>
 </body>
 </html>
