@@ -859,6 +859,7 @@
                             <td>${entry.player}</td>
                             <td>${entry.wins || 0}</td>
                             <td>${entry.losses || 0}</td>
+                            <td>${entry.ties || 0}</td>
                         </tr>
                     `).join("");
 
@@ -870,6 +871,7 @@
                                 <th>Player</th>
                                 <th>Wins</th>
                                 <th>Losses</th>
+                                <th>Ties</th>
                             </tr>
                         </thead>
                         <tbody>${rows}</tbody>

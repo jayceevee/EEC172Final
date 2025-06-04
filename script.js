@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${player.player}</td>
           <td>${player.wins}</td>
           <td>${player.losses}</td>
+          <td>${player.ties}</td>
         `;
         tbody.appendChild(row);
       });
