@@ -816,6 +816,7 @@
         // Leaderboard Modal Logic
         leaderboardTabBtn.addEventListener('click', () => {
             leaderboardModal.classList.add('visible');
+            loadLeaderboard(); // fetch from AWS when opening
         });
 
         closeLeaderboardModalBtn.addEventListener('click', () => {
@@ -836,6 +837,50 @@
             slides[0].style.opacity = '1';
         }
         updateSlides(); // Call to set initial button states and progress
+        async function loadLeaderboard() {
+            const container = document.getElementById('leaderboard-data-container');
+            container.innerHTML = `<p class="text-sm text-gray-400">Loading leaderboard...</p>`;
+
+            try {
+                const res = await fetch('https://q4zp8p15nj.execute-api.us-east-1.amazonaws.com/default/getLeaderboard');
+                if (!res.ok) throw new Error(`Status ${res.status}`);
+                const data = await res.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    container.innerHTML = `<p class="text-sm text-gray-400">No leaderboard data available.</p>`;
+                    return;
+                }
+
+                const rows = data
+                    .sort((a, b) => (b.wins || 0) - (a.wins || 0))
+                    .map((entry, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${entry.player}</td>
+                            <td>${entry.wins || 0}</td>
+                            <td>${entry.losses || 0}</td>
+                        </tr>
+                    `).join("");
+
+                container.innerHTML = `
+                    <table class="status-table mx-auto mt-4" style="background: rgba(44,44,46,0.8);">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Wins</th>
+                                <th>Losses</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-400 text-sm">Failed to load leaderboard. ${err.message}</p>`;
+            }
+        }
+
+        
     </script>
 </body>
 </html>
